@@ -106,13 +106,13 @@ $datos['sucursal_servicio_id'] = $this->get_sucursal_servicio_id();
 
             public function fill(?array $p_entity_data) : bool{
                 if($p_entity_data !== null & count($p_entity_data) > 0 ) {
-$this->set_sucursal_id(Convert::toInt($p_entity_data['sucursal_id']));
+                    $this->set_sucursal_id(Convert::toInt($p_entity_data['sucursal_id']));
 $this->set_sucursal_nombre($p_entity_data['sucursal_nombre']);
 $this->set_sucursal_fecha_creacion(Convert::toDateTime($p_entity_data['sucursal_fecha_creacion']));
 $this->set_sucursal_servicio_id(Convert::toInt($p_entity_data['sucursal_servicio_id']));
 
                 } else {
-$this->set_sucursal_id(null);
+                    $this->set_sucursal_id(null);
 $this->set_sucursal_nombre(null);
 $this->set_sucursal_fecha_creacion(null);
 $this->set_sucursal_servicio_id(null);
@@ -120,7 +120,32 @@ $this->set_sucursal_servicio_id(null);
                 }
                 return $this->sucursal_id['value'] !== null;
             }
+        
 
+
+            public function save() : bool {
+                if($this->sucursal_id['value'] == null) {
+                    $query = new DbQuery("INSERT INTO sucursales (sucursal_id, sucursal_nombre, sucursal_fecha_creacion, sucursal_servicio_id) VALUES ({sucursal_id}, {sucursal_nombre}, {sucursal_fecha_creacion}, {sucursal_servicio_id}) ");
+                    $query->addParameter(new DbParameter('sucursal_id', $this->sucursal_id['datatype'], Convert::toInt($this->sucursal_id['value'])));, 
+$query->addParameter(new DbParameter('sucursal_nombre', $this->sucursal_nombre['datatype'], $this->sucursal_nombre['value']);, 
+$query->addParameter(new DbParameter('sucursal_fecha_creacion', $this->sucursal_fecha_creacion['datatype'], Convert::toDateTime($this->sucursal_fecha_creacion['value'])));, 
+$query->addParameter(new DbParameter('sucursal_servicio_id', $this->sucursal_servicio_id['datatype'], Convert::toInt($this->sucursal_servicio_id['value'])));
+                } else {
+                    $query = new DbQuery("UPDATE sucursales SET sucursal_id = {sucursal_id}, sucursal_nombre = {sucursal_nombre}, sucursal_fecha_creacion = {sucursal_fecha_creacion}, sucursal_servicio_id = {sucursal_servicio_id} WHERE sucursal_id = {sucursal_id}");
+                    $query->addParameter(new DbParameter('sucursal_id', $this->sucursal_id['datatype'], Convert::toInt($this->sucursal_id['value'])));, 
+$query->addParameter(new DbParameter('sucursal_nombre', $this->sucursal_nombre['datatype'], $this->sucursal_nombre['value']);, 
+$query->addParameter(new DbParameter('sucursal_fecha_creacion', $this->sucursal_fecha_creacion['datatype'], Convert::toDateTime($this->sucursal_fecha_creacion['value'])));, 
+$query->addParameter(new DbParameter('sucursal_servicio_id', $this->sucursal_servicio_id['datatype'], Convert::toInt($this->sucursal_servicio_id['value'])));
+                }
+
+                $filas_afectadas = $this->dbmanager->executeNonQuery($query);
+                
+                if($this->get_sucursal_id() == null) {
+                    $this->set_sucursal_id($this->dbmanager->lastID());
+                }
+                
+                return $filas_afectadas !== -1;
+            }
         
 
     private function camelCase($string)

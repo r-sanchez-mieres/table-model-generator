@@ -66,12 +66,14 @@ class PostgresSimpleTableToModel
 
     private function buildModel($className, $columns, $tableName)
     {
-        $properties = [];
-        $methods    = [];
-        $fill       = "";
-        $fillNull   = "";
-        $toArray    = "";
-        $pk         = "";
+        $properties     = [];
+        $methods        = [];
+        $fill           = "";
+        $fillNull       = "";
+        $toArray        = "";
+        $pk             = "";
+        $col_fillables  = [];
+        $parmas         = [];
         foreach ($columns as $column) {
             $field     = $column['field'];
             $property  = $this->camelCase($field);
@@ -86,12 +88,15 @@ class PostgresSimpleTableToModel
             switch ( $type ) {
                 case 'int':
                     $valueFill = "Convert::toInt(\$p_entity_data['{$field}'])";
+                    $params[] = "\$query->addParameter(new DbParameter('{$field}', \$this->{$field}['datatype'], Convert::toInt(\$this->{$field}['value'])));";
                     break;
                 case '\DateTime':
                     $valueFill = "Convert::toDateTime(\$p_entity_data['{$field}'])";
+                    $params[] = "\$query->addParameter(new DbParameter('{$field}', \$this->{$field}['datatype'], Convert::toDateTime(\$this->{$field}['value'])));";
                     break;
                 default:
                     $valueFill = "\$p_entity_data['{$field}']";
+                    $params[] = "\$query->addParameter(new DbParameter('{$field}', \$this->{$field}['datatype'], \$this->{$field}['value']);";
             }
             
             $fill .= "\$this->set_{$field}($valueFill);\n";
@@ -101,7 +106,13 @@ class PostgresSimpleTableToModel
                 $pk = $field;
             }
 
+            $col_fillables[] = $field;
+
         }
+
+        $col_fillable_pattern = array_map(function($n){
+            return sprintf("{%s}", $n);
+        },$col_fillables);
 
         $methods[] = "
             public function toArray() : array {
@@ -130,13 +141,45 @@ class PostgresSimpleTableToModel
         $methods[] = "
             public function fill(?array \$p_entity_data) : bool{
                 if(\$p_entity_data !== null & count(\$p_entity_data) > 0 ) {
-{$fill}
+                    {$fill}
                 } else {
-{$fillNull}
+                    {$fillNull}
                 }
                 return \$this->{$pk}['value'] !== null;
             }
+        ";
 
+
+        $cols = implode(', ', $col_fillables);
+        $col_pattern = implode(', ', $col_fillable_pattern);
+
+        $update_cols = array_map(function($n){
+            return sprintf("{$n} = {%s}", $n);
+        }, $col_fillables);
+
+        $params_str = implode(", \n", $params);
+        $params_updates = implode(", ", $update_cols);
+        $pk_patt = "{" . $pk . "}";
+
+        $update_cols_str = implode(", \n", $params);
+        $methods[] = "
+            public function save() : bool {
+                if(\$this->{$pk}['value'] == null) {
+                    \$query = new DbQuery(\"INSERT INTO {$tableName} ({$cols}) VALUES ({$col_pattern}) \");
+                    {$params_str}
+                } else {
+                    \$query = new DbQuery(\"UPDATE {$tableName} SET {$params_updates} WHERE {$pk} = {$pk_patt}\");
+                    {$update_cols_str}
+                }
+
+                \$filas_afectadas = \$this->dbmanager->executeNonQuery(\$query);
+                
+                if(\$this->get_{$pk}() == null) {
+                    \$this->set_{$pk}(\$this->dbmanager->lastID());
+                }
+                
+                return \$filas_afectadas !== -1;
+            }
         ";
 
         return $this->generateClassTemplate($className, $properties, $methods);
