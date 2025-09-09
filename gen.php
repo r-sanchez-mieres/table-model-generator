@@ -82,7 +82,19 @@ class PostgresSimpleTableToModel
             $methods[]    = $this->generateAccessors($property, $type);
 
             $toArray .= "\$datos['{$field}'] = \$this->get_{$field}(); \n";
-            $fill .= "\$this->set_{$field}(\$p_entity_data['{$field}']);\n";
+            
+            switch ( $type ) {
+                case 'int':
+                    $valueFill = "Convert::toInt(\$p_entity_data['{$field}'])";
+                    break;
+                case '\DateTime':
+                    $valueFill = "Convert::toDateTime(\$p_entity_data['{$field}'])";
+                    break;
+                default:
+                    $valueFill = "\$p_entity_data['{$field}']";
+            }
+            
+            $fill .= "\$this->set_{$field}($valueFill);\n";
             $fillNull .= "\$this->set_{$field}(null);\n";
 
             if ($pk == "" && $column['is_primary_key'] == 'YES') {
