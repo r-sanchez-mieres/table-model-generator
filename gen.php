@@ -74,6 +74,7 @@ class PostgresSimpleTableToModel
         $pk             = "";
         $col_fillables  = [];
         $parmas         = [];
+        $parameter_update = "";
         foreach ($columns as $column) {
             $field     = $column['field'];
             $property  = $this->camelCase($field);
@@ -105,8 +106,13 @@ class PostgresSimpleTableToModel
             if ($pk == "" && $column['is_primary_key'] == 'YES') {
                 $pk = $field;
             }
+            if ($column['is_primary_key'] == 'YES') {
+                $parameter_update = array_pop($params);
+            }
 
-            $col_fillables[] = $field;
+            if($column['is_primary_key'] == 'NO') {
+                $col_fillables[] = $field;
+            }
 
         }
 
@@ -161,7 +167,7 @@ class PostgresSimpleTableToModel
         $params_updates = implode(", ", $update_cols);
         $pk_patt = "{" . $pk . "}";
 
-        $update_cols_str = implode(" \n", $params);
+        $update_cols_str = implode(" \n", $params) . $parameter_update;
         $methods[] = "
             public function save() : bool {
                 if(\$this->{$pk}['value'] == null) {
