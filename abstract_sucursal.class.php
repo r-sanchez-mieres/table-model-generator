@@ -126,15 +126,15 @@ $this->set_sucursal_servicio_id(null);
             public function save() : bool {
                 if($this->sucursal_id['value'] == null) {
                     $query = new DbQuery("INSERT INTO sucursales (sucursal_id, sucursal_nombre, sucursal_fecha_creacion, sucursal_servicio_id) VALUES ({sucursal_id}, {sucursal_nombre}, {sucursal_fecha_creacion}, {sucursal_servicio_id}) ");
-                    $query->addParameter(new DbParameter('sucursal_id', $this->sucursal_id['datatype'], Convert::toInt($this->sucursal_id['value'])));, 
-$query->addParameter(new DbParameter('sucursal_nombre', $this->sucursal_nombre['datatype'], $this->sucursal_nombre['value']);, 
-$query->addParameter(new DbParameter('sucursal_fecha_creacion', $this->sucursal_fecha_creacion['datatype'], Convert::toDateTime($this->sucursal_fecha_creacion['value'])));, 
+                    $query->addParameter(new DbParameter('sucursal_id', $this->sucursal_id['datatype'], Convert::toInt($this->sucursal_id['value']))); 
+$query->addParameter(new DbParameter('sucursal_nombre', $this->sucursal_nombre['datatype'], $this->sucursal_nombre['value'])); 
+$query->addParameter(new DbParameter('sucursal_fecha_creacion', $this->sucursal_fecha_creacion['datatype'], Convert::toDateTime($this->sucursal_fecha_creacion['value']))); 
 $query->addParameter(new DbParameter('sucursal_servicio_id', $this->sucursal_servicio_id['datatype'], Convert::toInt($this->sucursal_servicio_id['value'])));
                 } else {
                     $query = new DbQuery("UPDATE sucursales SET sucursal_id = {sucursal_id}, sucursal_nombre = {sucursal_nombre}, sucursal_fecha_creacion = {sucursal_fecha_creacion}, sucursal_servicio_id = {sucursal_servicio_id} WHERE sucursal_id = {sucursal_id}");
-                    $query->addParameter(new DbParameter('sucursal_id', $this->sucursal_id['datatype'], Convert::toInt($this->sucursal_id['value'])));, 
-$query->addParameter(new DbParameter('sucursal_nombre', $this->sucursal_nombre['datatype'], $this->sucursal_nombre['value']);, 
-$query->addParameter(new DbParameter('sucursal_fecha_creacion', $this->sucursal_fecha_creacion['datatype'], Convert::toDateTime($this->sucursal_fecha_creacion['value'])));, 
+                    $query->addParameter(new DbParameter('sucursal_id', $this->sucursal_id['datatype'], Convert::toInt($this->sucursal_id['value']))); 
+$query->addParameter(new DbParameter('sucursal_nombre', $this->sucursal_nombre['datatype'], $this->sucursal_nombre['value'])); 
+$query->addParameter(new DbParameter('sucursal_fecha_creacion', $this->sucursal_fecha_creacion['datatype'], Convert::toDateTime($this->sucursal_fecha_creacion['value']))); 
 $query->addParameter(new DbParameter('sucursal_servicio_id', $this->sucursal_servicio_id['datatype'], Convert::toInt($this->sucursal_servicio_id['value'])));
                 }
 

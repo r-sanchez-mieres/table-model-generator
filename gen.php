@@ -96,7 +96,7 @@ class PostgresSimpleTableToModel
                     break;
                 default:
                     $valueFill = "\$p_entity_data['{$field}']";
-                    $params[] = "\$query->addParameter(new DbParameter('{$field}', \$this->{$field}['datatype'], \$this->{$field}['value']);";
+                    $params[] = "\$query->addParameter(new DbParameter('{$field}', \$this->{$field}['datatype'], \$this->{$field}['value']));";
             }
             
             $fill .= "\$this->set_{$field}($valueFill);\n";
@@ -157,11 +157,11 @@ class PostgresSimpleTableToModel
             return sprintf("{$n} = {%s}", $n);
         }, $col_fillables);
 
-        $params_str = implode(", \n", $params);
+        $params_str = implode(" \n", $params);
         $params_updates = implode(", ", $update_cols);
         $pk_patt = "{" . $pk . "}";
 
-        $update_cols_str = implode(", \n", $params);
+        $update_cols_str = implode(" \n", $params);
         $methods[] = "
             public function save() : bool {
                 if(\$this->{$pk}['value'] == null) {
