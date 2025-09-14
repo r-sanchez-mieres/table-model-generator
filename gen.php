@@ -8,12 +8,15 @@ class PostgresSimpleTableToModel
         $this->pdo = $pdo;
     }
 
-    public function generateModel($tableName, $className, $schema = 'public')
+    public function generateModel($tableName, $schema = 'public')
     {
+        $className = "abstract_{$tableName}";
         $columns   = $this->getTableColumns($tableName, $schema);
         $modelCode = $this->buildModel($className, $columns, $tableName);
 
-        return $modelCode;
+        //return $modelCode;
+
+        return array('model_name' => "{$className}.class.php", 'code' => $modelCode);
     }
 
     private function getTableColumns($tableName, $schema)
@@ -306,20 +309,16 @@ abstract class {$className}
 
 {$meths}
 
-    private function camelCase(\$string)
-    {
-        return lcfirst(str_replace('_', '', ucwords(\$string, '_')));
-    }
 }
 PHP;
     }
 }
 
 // Uso para PostgreSQL con PDO
-$dsn = "pgsql:host=localhost;port=5433;dbname=biometria";
+$dsn = "pgsql:host=localhost;port=5432;dbname=biometria";
 $pdo = new PDO($dsn, 'postgres', 'root');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $generator = new PostgresSimpleTableToModel($pdo);
-$model     = $generator->generateModel('sucursales', 'abstract_sucursal');
-file_put_contents('abstract_sucursal.class.php', $model);
+$model     = $generator->generateModel('sucursales');
+file_put_contents($model['model_name'], $model['code']);
